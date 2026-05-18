@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수업 질문 수집</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+  :root {
+    --teal-dark: #085041;
+    --teal-mid: #0F6E56;
+    --teal-light: #E1F5EE;
+    --teal-text: #085041;
+    --blue-light: #E6F1FB;
+    --blue-text: #0C447C;
+    --red: #A32D2D;
+    --bg: #ffffff;
+    --bg2: #f5f5f3;
+    --border: rgba(0,0,0,0.12);
+    --text: #1a1a18;
+    --text2: #6b6b68;
+    --radius: 10px;
+    --radius-sm: 7px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --teal-light: #04342C;
+      --teal-text: #9FE1CB;
+      --blue-light: #042C53;
+      --blue-text: #85B7EB;
+      --bg: #1c1c1a;
+      --bg2: #262624;
+      --border: rgba(255,255,255,0.12);
+      --text: #f0ede8;
+      --text2: #9c9c98;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+         background: var(--bg2); color: var(--text); min-height: 100vh; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  h1 { font-size: 18px; font-weight: 600; }
+  .subtitle { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .page-header { margin-bottom: 1.25rem; }
+  .tab-bar { display: flex; gap: 4px; background: var(--bg); border: 0.5px solid var(--border);
+             border-radius: var(--radius); padding: 4px; margin-bottom: 1.25rem; }
+  .tab { flex: 1; padding: 8px; border: none; background: transparent; cursor: pointer;
+         border-radius: var(--radius-sm); font-size: 14px; color: var(--text2);
+         font-family: inherit; transition: all 0.15s; display: flex; align-items: center;
+         justify-content: center; gap: 5px; }
+  .tab.active { background: var(--bg2); color: var(--text); font-weight: 500;
+                border: 0.5px solid var(--border); }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius);
+          padding: 1.25rem; margin-bottom: 1rem; }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
+  .icon-box { width: 36px; height: 36px; background: var(--teal-light); border-radius: var(--radius-sm);
+              display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .icon-box i { font-size: 18px; color: var(--teal-text); }
+  .icon-box.warn { background: #FAEEDA; }
+  .icon-box.warn i { color: #854F0B; }
+  .card-title { font-size: 15px; font-weight: 600; }
+  .card-desc { font-size: 13px; color: var(--text2); margin-top: 1px; }
+  .form-row { display: grid; gap: 12px; margin-bottom: 12px; }
+  .form-row.cols2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  .fg { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 13px; color: var(--text2); }
+  input, textarea, select {
+    font-family: inherit; font-size: 14px; width: 100%;
+    padding: 8px 10px; border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--bg2); color: var(--text);
+    outline: none; transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--teal-mid); }
+  textarea { resize: vertical; min-height: 80px; }
+  .btn-primary { width: 100%; padding: 10px; background: var(--teal-mid); color: #fff;
+                 border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+                 cursor: pointer; font-family: inherit; margin-top: 4px; transition: opacity 0.15s;
+                 display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-sec { padding: 8px 14px; background: transparent; border: 0.5px solid var(--border);
+             border-radius: var(--radius-sm); font-size: 13px; cursor: pointer;
+             font-family: inherit; color: var(--text); display: flex; align-items: center;
+             gap: 6px; transition: background 0.1s; white-space: nowrap; }
+  .btn-sec:hover { background: var(--bg2); }
+  .btn-export { padding: 8px 14px; background: var(--teal-dark); color: #fff; border: none;
+                border-radius: var(--radius-sm); font-size: 13px; cursor: pointer;
+                font-family: inherit; display: flex; align-items: center; gap: 6px;
+                white-space: nowrap; }
+  .btn-danger { padding: 8px 14px; background: transparent; color: var(--red);
+                border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+                font-size: 13px; cursor: pointer; font-family: inherit;
+                display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1rem; }
+  .stat { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+          padding: 12px; text-align: center; }
+  .stat-n { font-size: 22px; font-weight: 600; }
+  .stat-l { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .toolbar input, .toolbar select { font-size: 13px; flex: 1; min-width: 90px; }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; border-bottom: 0.5px solid var(--border);
+       color: var(--text2); font-weight: 500; background: var(--bg2); }
+  td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); color: var(--text);
+       vertical-align: top; word-break: break-word; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg2); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px;
+           background: var(--teal-light); color: var(--teal-text); }
+  .badge-s { background: var(--blue-light); color: var(--blue-text); }
+  .empty { text-align: center; padding: 2.5rem; color: var(--text2); font-size: 14px; }
+  .err { font-size: 12px; color: var(--red); margin-top: 4px; min-height: 16px; }
+  .section-label { font-size: 12px; color: var(--text2); font-weight: 600;
+                   border-top: 0.5px solid var(--border); padding-top: 1rem; margin: 1rem 0 0.5rem; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+           background: var(--teal-dark); color: #fff; padding: 10px 18px;
+           border-radius: var(--radius); font-size: 13px; opacity: 0;
+           transition: all 0.3s; pointer-events: none; z-index: 9999; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+             display: flex; align-items: center; justify-content: center; z-index: 900; }
+  .modal { background: var(--bg); border: 0.5px solid var(--border);
+           border-radius: var(--radius); padding: 1.5rem; width: 340px; max-width: 90vw; }
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 1rem; }
+  .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .modal-btns .btn-sec { flex: 1; justify-content: center; }
+  .modal-btns .btn-primary { flex: 2; margin-top: 0; }
+  .hint { font-size: 11px; color: var(--text2); text-align: center; margin-top: 10px; }
+  .loading { display: flex; align-items: center; justify-content: center; gap: 8px;
+             padding: 2rem; color: var(--text2); font-size: 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+  @media (max-width: 480px) {
+    .form-row.cols3 { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-header">
+    <h1>수업 질문 수집</h1>
+    <p class="subtitle">수업 제재와 관련된 질문을 작성해주세요</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" id="tab-q" onclick="showTab('q')">
+      <i class="ti ti-pencil"></i> 질문 입력
+    </button>
+    <button class="tab" id="tab-admin" onclick="tryAdmin()">
+      <i class="ti ti-layout-list"></i> 질문 관리
+    </button>
+  </div>
+
+  <!-- ── 질문 입력 탭 ── -->
+  <div id="pane-q">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-box"><i class="ti ti-message-circle-question"></i></div>
+        <div><div class="card-title">질문 입력</div>
+             <div class="card-desc">모든 항목을 빠짐없이 입력해주세요</div></div>
+      </div>
+      <div class="form-row cols3">
+        <div class="fg"><label for="f-sess">수업 회차</label>
+          <select id="f-sess"><option>불러오는 중...</option></select></div>
+        <div class="fg"><label for="f-id">학번</label>
+          <input id="f-id" type="text" placeholder="예) 20241234" maxlength="20"></div>
+        <div class="fg"><label for="f-name">이름</label>
+          <input id="f-name" type="text" placeholder="홍길동" maxlength="20"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label for="f-topic">수업 제재</label>
+          <input id="f-topic" type="text" placeholder="예) 3단원: 환경과 생태계" maxlength="80"></div>
+      </div>
+      <div class="form-row" style="margin-bottom:4px;">
+        <div class="fg"><label for="f-q">질문</label>
+          <textarea id="f-q" placeholder="수업 내용과 관련된 궁금한 점을 자유롭게 작성하세요..."></textarea></div>
+      </div>
+      <div id="dup-warn" class="err" style="display:none;">
+        <i class="ti ti-alert-circle"></i> 이 회차에 이미 제출한 학번입니다. 질문은 회차당 1회만 가능합니다.
+      </div>
+      <button class="btn-primary" id="submit-btn" onclick="submitQ()">
+        <i class="ti ti-send"></i> 질문 제출
+      </button>
+    </div>
+  </div>
+
+  <!-- ── 관리 탭 ── -->
+  <div id="pane-admin" style="display:none;">
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="s-total">—</div><div class="stat-l">전체 질문</div></div>
+      <div class="stat"><div class="stat-n" id="s-stu">—</div><div class="stat-l">참여 학생</div></div>
+      <div class="stat"><div class="stat-n" id="s-sess">—</div><div class="stat-l">진행 회차</div></div>
+      <div class="stat"><div class="stat-n" id="s-topic">—</div><div class="stat-l">수업 제재</div></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input type="text" id="f-search" placeholder="학번·이름·질문 검색..." oninput="renderTbl()">
+        <select id="f-fsess" onchange="renderTbl()"><option value="">전체 회차</option></select>
+        <select id="f-ftopic" onchange="renderTbl()"><option value="">전체 제재</option></select>
+        <button class="btn-export" onclick="exportXlsx()">
+          <i class="ti ti-file-spreadsheet"></i> 엑셀 내보내기
+        </button>
+        <button class="btn-sec" onclick="loadData()">
+          <i class="ti ti-refresh"></i>
+        </button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:30px">#</th>
+            <th style="width:60px">회차</th>
+            <th style="width:75px">날짜</th>
+            <th style="width:78px">학번</th>
+            <th style="width:58px">이름</th>
+            <th style="width:88px">수업 제재</th>
+            <th>질문</th>
+          </tr></thead>
+          <tbody id="q-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 설정 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-box warn"><i class="ti ti-settings"></i></div>
+        <div><div class="card-title">관리자 설정</div>
+             <div class="card-desc">회차 수 및 비밀번호를 변경합니다</div></div>
+      </div>
+      <div class="section-label">수업 회차 개설</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="number" id="cfg-sess" min="1" max="50" style="width:70px;">
+        <span style="font-size:13px;color:var(--text2);">회차까지</span>
+        <button class="btn-sec" onclick="saveConfig()"><i class="ti ti-check"></i> 적용</button>
+      </div>
+      <div class="section-label">비밀번호 변경</div>
+      <div class="form-row cols2" style="margin-bottom:4px;">
+        <div class="fg"><label>새 비밀번호 (4자 이상)</label>
+          <input type="password" id="new-pw1" placeholder="새 비밀번호" maxlength="30"></div>
+        <div class="fg"><label>비밀번호 확인</label>
+          <input type="password" id="new-pw2" placeholder="다시 입력" maxlength="30"></div>
+      </div>
+      <div id="pw-err" class="err"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <button class="btn-sec" onclick="changePw()"><i class="ti ti-lock"></i> 비밀번호 변경</button>
+        <button class="btn-danger" onclick="logout()"><i class="ti ti-logout"></i> 로그아웃</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 비밀번호 모달 ── -->
+<div class="overlay" id="pw-modal" style="display:none;">
+  <div class="modal">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div class="icon-box"><i class="ti ti-lock"></i></div>
+      <div><h3>관리자 인증</h3><p style="margin:0;">비밀번호를 입력하세요</p></div>
+    </div>
+    <div class="fg">
+      <input type="password" id="modal-pw" placeholder="비밀번호"
+             maxlength="30" onkeydown="if(event.key==='Enter')checkPw()">
+    </div>
+    <div id="modal-err" class="err"></div>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeModal()">취소</button>
+      <button class="btn-primary" onclick="checkPw()"><i class="ti ti-unlock"></i> 확인</button>
+    </div>
+    <p class="hint">초기 비밀번호: <code>admin1234</code></p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+// ┌─────────────────────────────────────────────────────────┐
+// │  ★ 여기에 Apps Script 배포 URL을 붙여넣으세요           │
+// └─────────────────────────────────────────────────────────┘
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJqGxsOL5hUW609-Vz8dwmvVO0kIH8WLx82nWcJ8WAxhHak6SmuUssbFb_tQ395jOuAA/exec';
+
+let questions = [];
+let adminPw = '';
+let sessionCount = 10;
+let adminUnlocked = false;
+
+// ── 초기화 ──────────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await gGet({ action: 'getConfig' });
+    if (res.success) {
+      sessionCount = res.sessionCount;
+    }
+  } catch(e) {}
+  buildSessSelect('f-sess', sessionCount);
+}
+
+// ── 탭 전환 ─────────────────────────────────────────────────
+function showTab(t) {
+  document.getElementById('pane-q').style.display     = t === 'q'     ? '' : 'none';
+  document.getElementById('pane-admin').style.display = t === 'admin' ? '' : 'none';
+  document.getElementById('tab-q').className     = 'tab' + (t === 'q'     ? ' active' : '');
+  document.getElementById('tab-admin').className = 'tab' + (t === 'admin' ? ' active' : '');
+  if (t === 'admin') { document.getElementById('cfg-sess').value = sessionCount; loadData(); }
+}
+
+function tryAdmin() {
+  if (adminUnlocked) { showTab('admin'); return; }
+  document.getElementById('modal-pw').value = '';
+  document.getElementById('modal-err').textContent = '';
+  document.getElementById('pw-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-pw').focus(), 50);
+}
+
+function closeModal() { document.getElementById('pw-modal').style.display = 'none'; }
+
+async function checkPw() {
+  const pw = document.getElementById('modal-pw').value;
+  if (!pw) return;
+  // 서버에서 비밀번호 검증 (getData 요청)
+  try {
+    const res = await gGet({ action: 'getData', pw });
+    if (res.success) {
+      adminPw = pw;
+      adminUnlocked = true;
+      questions = res.data;
+      closeModal();
+      showTab('admin');
+    } else {
+      document.getElementById('modal-err').textContent = '비밀번호가 올바르지 않습니다.';
+      document.getElementById('modal-pw').value = '';
+    }
+  } catch(e) {
+    document.getElementById('modal-err').textContent = '연결 오류가 발생했습니다.';
+  }
+}
+
+function logout() { adminUnlocked = false; adminPw = ''; showTab('q'); toast('로그아웃됐습니다'); }
+
+// ── 질문 제출 ────────────────────────────────────────────────
+async function submitQ() {
+  const sess  = document.getElementById('f-sess').value;
+  const id    = document.getElementById('f-id').value.trim();
+  const name  = document.getElementById('f-name').value.trim();
+  const topic = document.getElementById('f-topic').value.trim();
+  const q     = document.getElementById('f-q').value.trim();
+  document.getElementById('dup-warn').style.display = 'none';
+  if (!sess || !id || !name || !topic || !q) { toast('모든 항목을 입력해주세요', true); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader spin"></i> 제출 중...';
+
+  try {
+    const res = await gPost({ action: 'submit', session: sess, id, name, topic, q });
+    if (res.success) {
+      ['f-id','f-name','f-topic','f-q'].forEach(i => document.getElementById(i).value = '');
+      toast('질문이 제출됐습니다 ✓');
+    } else if (res.error === 'duplicate') {
+      document.getElementById('dup-warn').style.display = '';
+    } else {
+      toast('오류가 발생했습니다: ' + res.error, true);
+    }
+  } catch(e) { toast('네트워크 오류가 발생했습니다', true); }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-send"></i> 질문 제출';
+}
+
+// ── 관리자: 데이터 불러오기 ──────────────────────────────────
+async function loadData() {
+  const tbody = document.getElementById('q-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="loading"><i class="ti ti-loader spin"></i> 불러오는 중...</td></tr>';
+  try {
+    const res = await gGet({ action: 'getData', pw: adminPw });
+    if (res.success) {
+      questions = res.data;
+      updateStats();
+      renderTbl();
+    } else {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">데이터를 불러오지 못했습니다</td></tr>';
+    }
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">네트워크 오류</td></tr>';
+  }
+}
+
+function updateStats() {
+  document.getElementById('s-total').textContent  = questions.length;
+  document.getElementById('s-stu').textContent    = new Set(questions.map(x => x.id)).size;
+  document.getElementById('s-sess').textContent   = new Set(questions.map(x => x.session)).size;
+  document.getElementById('s-topic').textContent  = new Set(questions.map(x => x.topic)).size;
+
+  const fSess  = document.getElementById('f-fsess');
+  const fTopic = document.getElementById('f-ftopic');
+  const cs = fSess.value, ct = fTopic.value;
+  fSess.innerHTML  = '<option value="">전체 회차</option>';
+  fTopic.innerHTML = '<option value="">전체 제재</option>';
+  [...new Set(questions.map(x => x.session))].sort((a,b)=>a-b).forEach(s => {
+    const o = document.createElement('option'); o.value = s; o.textContent = s + '회차';
+    if (String(s) === cs) o.selected = true;
+    fSess.appendChild(o);
+  });
+  [...new Set(questions.map(x => x.topic))].forEach(t => {
+    const o = document.createElement('option'); o.value = t; o.textContent = t;
+    if (t === ct) o.selected = true;
+    fTopic.appendChild(o);
+  });
+}
+
+function getFiltered() {
+  const q     = (document.getElementById('f-search').value||'').toLowerCase();
+  const sess  = document.getElementById('f-fsess').value;
+  const topic = document.getElementById('f-ftopic').value;
+  return questions.filter(x =>
+    (!sess  || String(x.session) === String(sess)) &&
+    (!topic || x.topic === topic) &&
+    (!q || String(x.id).includes(q) || x.name.includes(q) ||
+           x.q.toLowerCase().includes(q) || x.topic.toLowerCase().includes(q))
+  ).sort((a,b) => a.session - b.session || String(a.id).localeCompare(String(b.id)));
+}
+
+function renderTbl() {
+  const data  = getFiltered();
+  const tbody = document.getElementById('q-tbody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">
+      <i class="ti ti-inbox" style="font-size:20px;vertical-align:-4px;margin-right:6px"></i>
+      ${questions.length ? '검색 결과가 없습니다' : '제출된 질문이 없습니다'}
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map((x,i) => `
+    <tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td><span class="badge badge-s">${x.session}회차</span></td>
+      <td style="color:var(--text2);font-size:12px">${x.date||''}</td>
+      <td>${x.id}</td>
+      <td>${x.name}</td>
+      <td><span class="badge">${x.topic}</span></td>
+      <td>${x.q}</td>
+    </tr>`).join('');
+}
+
+// ── 엑셀 내보내기 ────────────────────────────────────────────
+function exportXlsx() {
+  const data = getFiltered();
+  if (!data.length) { toast('내보낼 데이터가 없습니다', true); return; }
+  const rows = [['번호','회차','날짜','시간','학번','이름','수업 제재','질문']].concat(
+    data.map((x,i) => [i+1, x.session+'회차', x.date||'', x.time||'', x.id, x.name, x.topic, x.q])
+  );
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:8},{wch:12},{wch:8},{wch:12},{wch:10},{wch:20},{wch:60}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '학생 질문');
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  XLSX.writeFile(wb, `학생질문_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}.xlsx`);
+  toast('엑셀 파일로 내보냈습니다');
+}
+
+// ── 설정 저장 ────────────────────────────────────────────────
+async function saveConfig() {
+  const v = parseInt(document.getElementById('cfg-sess').value);
+  if (!v || v < 1 || v > 50) { toast('1~50 사이로 입력해주세요', true); return; }
+  try {
+    const res = await gPost({ action: 'saveConfig', pw: adminPw, sessionCount: v });
+    if (res.success) {
+      sessionCount = v;
+      buildSessSelect('f-sess', v);
+      toast(`${v}회차까지 개설됐습니다`);
+    } else { toast('저장 실패: ' + res.error, true); }
+  } catch(e) { toast('네트워크 오류', true); }
+}
+
+async function changePw() {
+  const p1 = document.getElementById('new-pw1').value;
+  const p2 = document.getElementById('new-pw2').value;
+  const err = document.getElementById('pw-err');
+  if (!p1) { err.textContent = '새 비밀번호를 입력하세요.'; return; }
+  if (p1.length < 4) { err.textContent = '4자 이상 입력하세요.'; return; }
+  if (p1 !== p2) { err.textContent = '비밀번호가 일치하지 않습니다.'; return; }
+  err.textContent = '';
+  try {
+    const res = await gPost({ action: 'changePw', pw: adminPw, newPw: p1 });
+    if (res.success) {
+      adminPw = p1;
+      document.getElementById('new-pw1').value = '';
+      document.getElementById('new-pw2').value = '';
+      toast('비밀번호가 변경됐습니다');
+    } else { err.textContent = '변경 실패: ' + res.error; }
+  } catch(e) { err.textContent = '네트워크 오류'; }
+}
+
+// ── 유틸 ─────────────────────────────────────────────────────
+function buildSessSelect(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const cur = el.value;
+  el.innerHTML = '';
+  for (let i = 1; i <= count; i++) {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = i + '회차';
+    if (String(i) === cur) o.selected = true;
+    el.appendChild(o);
+  }
+}
+
+async function gGet(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${SCRIPT_URL}?${qs}`);
+  return res.json();
+}
+
+async function gPost(body) {
+  const res = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+function toast(msg, isErr) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = isErr ? '#A32D2D' : '#085041';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+init();
+</script>
+</body>
+</html>
