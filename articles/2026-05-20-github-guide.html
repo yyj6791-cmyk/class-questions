@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="GitHub과 Claude를 활용해 나만의 웹페이지를 만들고 공개하는 방법을 초보자 눈높이에서 설명합니다.">
+<title>GitHub으로 내 웹페이지 만들기 — 초보자 가이드</title>
+<style>
+:root {
+  --color-bg:#f5f2ed; --color-bg-alt:#eceae4; --color-bg-card:#ffffff;
+  --color-text:#1a1a18; --color-text-muted:#6b6a63; --color-text-faint:#a09f97;
+  --color-border:#dedad2; --color-accent:#d95f2b; --color-accent-hover:#c2521f;
+  --color-accent-soft:#faeee7;
+  --color-green:#3a6b4a; --color-green-soft:#e6f0e9;
+  --color-blue:#2d5a8e; --color-blue-soft:#e5eef7;
+  --color-yellow:#8a6a00; --color-yellow-soft:#fdf5d9;
+  --color-red:#b03a2e; --color-red-soft:#fdecea;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --font-mono:"SF Mono","Fira Code",Consolas,"Liberation Mono",monospace;
+  --text-xs:0.75rem; --text-sm:0.875rem; --text-base:1rem; --text-lg:1.125rem;
+  --text-xl:1.25rem; --text-2xl:1.5rem; --text-3xl:1.875rem;
+  --weight-medium:500; --weight-semibold:600; --weight-bold:700;
+  --leading-tight:1.25; --leading-normal:1.6; --leading-loose:1.8;
+  --space-1:0.25rem; --space-2:0.5rem; --space-3:0.75rem; --space-4:1rem;
+  --space-5:1.25rem; --space-6:1.5rem; --space-8:2rem; --space-12:3rem;
+  --radius-md:8px; --radius-lg:12px; --radius-full:9999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07); --shadow-md:0 4px 12px rgba(0,0,0,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);background:var(--color-bg);color:var(--color-text);line-height:var(--leading-normal);}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(245,242,237,0.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--color-border);}
+.nav-inner{max-width:900px;margin:0 auto;padding:var(--space-3) var(--space-6);display:flex;align-items:center;gap:var(--space-4);}
+.nav-logo{font-size:var(--text-sm);font-weight:var(--weight-semibold);color:var(--color-accent);text-decoration:none;}
+.nav-toc{margin-left:auto;display:flex;gap:var(--space-4);list-style:none;}
+.nav-toc a{font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none;transition:color 180ms ease;}
+.nav-toc a:hover{color:var(--color-accent);}
+@media(max-width:640px){.nav-toc{display:none;}}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#1a2a4a 0%,#1f3864 60%,#2d5a8e 100%);color:#fff;padding:var(--space-12) var(--space-6);}
+.hero-inner{max-width:900px;margin:0 auto;}
+.hero-label{display:inline-flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);font-weight:var(--weight-semibold);color:#e2a96a;letter-spacing:0.08em;text-transform:uppercase;background:rgba(255,255,255,0.07);border-radius:var(--radius-full);padding:var(--space-1) var(--space-3);margin-bottom:var(--space-5);}
+.hero h1{font-size:clamp(1.75rem,4vw,2.75rem);font-weight:var(--weight-bold);line-height:var(--leading-tight);letter-spacing:-0.03em;margin-bottom:var(--space-4);}
+.hero-sub{font-size:var(--text-lg);color:rgba(255,255,255,0.72);max-width:600px;line-height:var(--leading-loose);margin-bottom:var(--space-8);}
+.hero-meta{display:flex;align-items:center;gap:var(--space-4);font-size:var(--text-sm);color:rgba(255,255,255,0.5);}
+.hero-meta .dot{color:rgba(255,255,255,0.25);}
+
+/* LAYOUT */
+.layout{max-width:900px;margin:0 auto;padding:var(--space-12) var(--space-6);display:grid;grid-template-columns:1fr 220px;gap:var(--space-12);}
+@media(max-width:880px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+
+/* SIDEBAR */
+.sidebar-inner{position:sticky;top:72px;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:var(--shadow-sm);}
+.sidebar-title{font-size:var(--text-xs);font-weight:var(--weight-semibold);color:var(--color-text-faint);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:var(--space-4);}
+.toc-list{list-style:none;}
+.toc-list li{margin-bottom:var(--space-1);}
+.toc-list a{font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none;display:block;padding:var(--space-1) var(--space-2);border-radius:var(--radius-md);border-left:2px solid transparent;transition:all 180ms ease;}
+.toc-list a:hover{color:var(--color-accent);background:var(--color-accent-soft);}
+.toc-list a.active{color:var(--color-accent);border-left-color:var(--color-accent);background:var(--color-accent-soft);font-weight:var(--weight-medium);}
+
+/* ARTICLE */
+article{min-width:0;}
+h2{font-size:var(--text-2xl);font-weight:var(--weight-bold);letter-spacing:-0.02em;margin-top:var(--space-12);margin-bottom:var(--space-4);padding-bottom:var(--space-3);border-bottom:2px solid var(--color-border);scroll-margin-top:80px;}
+h2:first-of-type{margin-top:0;}
+h3{font-size:var(--text-xl);font-weight:var(--weight-semibold);letter-spacing:-0.015em;margin-top:var(--space-8);margin-bottom:var(--space-3);scroll-margin-top:80px;}
+p{font-size:var(--text-base);line-height:var(--leading-loose);color:var(--color-text);margin-bottom:var(--space-5);}
+
+/* CALLOUT */
+.callout{border-radius:var(--radius-lg);padding:var(--space-5) var(--space-6);margin:var(--space-6) 0;border-left:4px solid;}
+.callout-blue{background:var(--color-blue-soft);border-color:var(--color-blue);}
+.callout-green{background:var(--color-green-soft);border-color:var(--color-green);}
+.callout-yellow{background:var(--color-yellow-soft);border-color:var(--color-yellow);}
+.callout-red{background:var(--color-red-soft);border-color:var(--color-red);}
+.callout-title{font-size:var(--text-sm);font-weight:var(--weight-semibold);margin-bottom:var(--space-2);}
+.callout-blue .callout-title{color:var(--color-blue);}
+.callout-green .callout-title{color:var(--color-green);}
+.callout-yellow .callout-title{color:var(--color-yellow);}
+.callout-red .callout-title{color:var(--color-red);}
+.callout p{margin-bottom:0;font-size:var(--text-sm);}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin:var(--space-6) 0;}
+table{width:100%;border-collapse:collapse;font-size:var(--text-sm);}
+th{background:var(--color-bg-alt);padding:var(--space-3) var(--space-4);text-align:left;font-weight:var(--weight-semibold);border-bottom:2px solid var(--color-border);}
+td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border);line-height:var(--leading-normal);vertical-align:top;}
+tr:hover td{background:var(--color-bg-alt);}
+.badge{display:inline-block;padding:2px var(--space-2);border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:var(--weight-medium);}
+.badge-green{background:var(--color-green-soft);color:var(--color-green);}
+.badge-red{background:var(--color-red-soft);color:var(--color-red);}
+
+/* CODE */
+code{font-family:var(--font-mono);font-size:0.85em;background:var(--color-bg-alt);padding:2px 6px;border-radius:4px;color:var(--color-accent);}
+.code-block{background:#1a1a2e;color:#a8d8a8;border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-4) 0;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;overflow-x:auto;}
+
+/* STEP */
+.steps{margin:var(--space-6) 0;}
+.step{display:flex;gap:var(--space-4);margin-bottom:var(--space-5);}
+.step-num{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--color-accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:var(--weight-bold);font-size:var(--text-sm);}
+.step-body{flex:1;padding-top:4px;}
+.step-title{font-weight:var(--weight-semibold);margin-bottom:var(--space-1);}
+.step-desc{font-size:var(--text-sm);color:var(--color-text-muted);line-height:var(--leading-normal);}
+
+/* FOLDER TREE */
+.folder-tree{background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);margin:var(--space-6) 0;font-family:var(--font-mono);font-size:var(--text-sm);line-height:2;}
+.folder-tree .folder{color:var(--color-blue);}
+.folder-tree .file{color:var(--color-text-muted);}
+.folder-tree .comment{color:var(--color-green);font-size:var(--text-xs);}
+
+/* CARD GRID */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--space-4);margin:var(--space-6) 0;}
+.card{background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);transition:all 180ms ease;}
+.card:hover{border-color:var(--color-accent);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.card-icon{font-size:1.5rem;margin-bottom:var(--space-3);}
+.card-title{font-weight:var(--weight-semibold);font-size:var(--text-sm);margin-bottom:var(--space-2);}
+.card-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:var(--leading-normal);}
+
+/* DETAILS */
+details{border:1px solid var(--color-border);border-radius:var(--radius-md);margin:var(--space-3) 0;overflow:hidden;}
+summary{padding:var(--space-4) var(--space-5);font-weight:var(--weight-medium);font-size:var(--text-sm);cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;background:var(--color-bg-alt);transition:background 140ms ease;}
+summary:hover{background:var(--color-accent-soft);}
+summary::after{content:"＋";color:var(--color-accent);font-weight:var(--weight-bold);}
+details[open] summary::after{content:"－";}
+details>*:not(summary){padding:var(--space-4) var(--space-5);font-size:var(--text-sm);line-height:var(--leading-loose);color:var(--color-text-muted);}
+
+/* READING BAR */
+.reading-bar{position:fixed;top:0;left:0;height:3px;background:var(--color-accent);width:0%;z-index:200;transition:width 60ms linear;}
+
+/* FOOTER */
+footer{background:var(--color-bg-alt);border-top:1px solid var(--color-border);padding:var(--space-8) var(--space-6);text-align:center;}
+footer p{font-size:var(--text-sm);color:var(--color-text-faint);margin-bottom:0;}
+</style>
+</head>
+<body>
+
+<div class="reading-bar" id="readingBar"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">🐙 GitHub 활용 가이드</a>
+    <ul class="nav-toc">
+      <li><a href="#what">GitHub이란</a></li>
+      <li><a href="#today">오늘 작업</a></li>
+      <li><a href="#howto">활용법</a></li>
+      <li><a href="#mistakes">주의사항</a></li>
+      <li><a href="#links">주소 모음</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">📘 초보자 가이드</div>
+    <h1>GitHub으로<br>내 웹페이지 만들기</h1>
+    <p class="hero-sub">
+      영어가 가득한 GitHub, 사실 알고 보면 단순합니다.
+      Claude와 함께 HTML 파일을 만들고, 누구나 접속할 수 있는
+      나만의 웹페이지를 공개하는 방법을 처음부터 알아봅니다.
+    </p>
+    <div class="hero-meta">
+      <span>2026년 5월</span>
+      <span class="dot">·</span>
+      <span>약 8분 분량</span>
+      <span class="dot">·</span>
+      <span>입문자 대상</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <article>
+
+    <!-- 1. GitHub이란 -->
+    <h2 id="what">GitHub이란 무엇인가요?</h2>
+
+    <p>GitHub(깃허브)는 파일을 저장하고 인터넷에 공개할 수 있는 <strong>무료 저장소 서비스</strong>입니다. 특히 HTML 파일(웹페이지)을 올리면 누구나 인터넷 주소로 접속할 수 있는 웹사이트가 됩니다.</p>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">💡 한 줄 요약</div>
+      <p>GitHub = 파일을 저장하는 구글 드라이브 + 웹사이트로 공개해주는 기능이 합쳐진 서비스</p>
+    </div>
+
+    <h3>주요 용어 정리</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>용어</th><th>쉬운 설명</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Repository (레포지토리)</strong></td><td>내 파일들을 모아두는 폴더. 줄여서 "레포"라고 부릅니다.</td></tr>
+          <tr><td><strong>Commit (커밋)</strong></td><td>파일을 저장하는 행위. '저장 + 메모'라고 생각하면 됩니다.</td></tr>
+          <tr><td><strong>Branch (브랜치)</strong></td><td>작업 공간. <code>main</code> 브랜치 = 공식 버전입니다.</td></tr>
+          <tr><td><strong>GitHub Pages</strong></td><td>레포에 있는 HTML 파일을 웹사이트로 공개해주는 기능입니다.</td></tr>
+          <tr><td><strong>Actions (액션)</strong></td><td>파일을 올리면 자동으로 특정 작업을 실행해주는 로봇 기능입니다.</td></tr>
+          <tr><td><strong>Workflow (워크플로우)</strong></td><td>Actions가 어떤 순서로 일할지 적어둔 설명서(YAML 파일)입니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 2. 오늘 작업 -->
+    <h2 id="today">오늘 한 작업 정리</h2>
+
+    <p>Claude와 함께 아래 세 가지 작업을 완료했습니다.</p>
+
+    <h3>① 레포지토리 폴더 구조 설정</h3>
+
+    <div class="folder-tree">
+      <div><span class="folder">class-questions/</span></div>
+      <div>&nbsp;&nbsp;<span class="folder">├── .github/workflows/</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">└── deploy.yml</span>&nbsp;&nbsp;<span class="comment">← 자동 배포 설명서</span></div>
+      <div>&nbsp;&nbsp;<span class="folder">├── articles/</span>&nbsp;&nbsp;<span class="comment">← HTML 아티클 저장 폴더</span></div>
+      <div>&nbsp;&nbsp;<span class="folder">├── scripts/</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">└── generate_index.py</span>&nbsp;&nbsp;<span class="comment">← 목록 자동 생성</span></div>
+      <div>&nbsp;&nbsp;<span class="file">└── index.html</span>&nbsp;&nbsp;<span class="comment">← 자동 생성 (직접 수정 ❌)</span></div>
+    </div>
+
+    <h3>② GitHub Actions 자동 배포 설정</h3>
+    <p>main 브랜치에 파일을 올리면 자동으로 아래 순서가 실행됩니다.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">변경 감지</div>
+          <div class="step-desc">GitHub이 새 파일 업로드를 감지합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">index.html 자동 생성</div>
+          <div class="step-desc">generate_index.py가 실행되어 모든 파일을 스캔하고 목록 페이지를 새로 만듭니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">GitHub Pages 배포</div>
+          <div class="step-desc">완성된 파일이 자동으로 웹에 배포됩니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">접속 가능</div>
+          <div class="step-desc">약 1~2분 후 웹 주소에서 새 페이지를 확인할 수 있습니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 활용법 -->
+    <h2 id="howto">앞으로 이렇게 활용하세요</h2>
+
+    <h3>새 페이지를 웹에 올리는 순서</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Claude에게 HTML 요청</div>
+          <div class="step-desc">"아티클 만들어줘: 인공지능이란 무엇인가" 처럼 요청합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">파일 다운로드</div>
+          <div class="step-desc">완성된 .html 파일을 내 컴퓨터에 저장합니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">GitHub에 업로드</div>
+          <div class="step-desc">class-questions 레포 → articles 폴더 → Add file → Upload files</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Commit changes 클릭</div>
+          <div class="step-desc">초록색 버튼을 누르면 자동 배포가 시작됩니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">1~2분 후 접속 확인</div>
+          <div class="step-desc">Actions 탭에서 초록 체크가 뜨면 완료입니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>만들 수 있는 HTML 종류</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <div class="card-title">아티클</div>
+        <div class="card-desc">"아티클 만들어줘: [주제]" — 긴 글 형식의 교육 자료</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎞️</div>
+        <div class="card-title">슬라이드</div>
+        <div class="card-desc">"슬라이드 만들어줘: [주제]" — 발표용 슬라이드 덱</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗺️</div>
+        <div class="card-title">다이어그램</div>
+        <div class="card-desc">"다이어그램 그려줘: [내용]" — 구조도, 흐름도</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛠️</div>
+        <div class="card-title">인터랙티브 툴</div>
+        <div class="card-desc">"인터랙티브 툴 만들어줘" — 계산기, 퀴즈 등</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">리포트</div>
+        <div class="card-desc">"리포트 써줘: [주제]" — 연구/분석 보고서</div>
+      </div>
+    </div>
+
+    <h3>파일 이름 & 주소 규칙</h3>
+    <p>파일 이름은 아래 형식으로 만들어야 날짜가 자동으로 표시됩니다.</p>
+    <div class="code-block">YYYY-MM-DD-제목.html
+예시) 2026-05-20-blockchain-intro.html</div>
+
+    <p>파일을 올린 후 아래 주소 패턴으로 접속하면 됩니다.</p>
+    <div class="code-block">https://yyj6791-cmyk.github.io/class-questions/articles/파일이름.html</div>
+
+    <!-- 4. 주의사항 -->
+    <h2 id="mistakes">자주 실수하는 것들</h2>
+
+    <details>
+      <summary>404 오류가 뜬다</summary>
+      Actions 탭에서 배포가 완료됐는지 확인하세요. 초록 체크(✅)가 뜨면 성공입니다. 파일을 올린 직후에는 1~2분 기다려야 해요.
+    </details>
+    <details>
+      <summary>deploy.yml이 Actions에 안 보인다</summary>
+      파일 위치가 반드시 <code>.github/workflows/</code> 안에 있어야 합니다. <code>.github/</code> 바로 아래에 있으면 인식이 안 됩니다.
+    </details>
+    <details>
+      <summary>index.html을 직접 수정했다</summary>
+      index.html은 자동 생성 파일입니다. 다음 배포 때 덮어씌워집니다. 직접 수정하지 마세요.
+    </details>
+    <details>
+      <summary>파일을 올렸는데 목록에 안 보인다</summary>
+      <code>articles/</code>, <code>specs/</code>, <code>reports/</code> 등 정해진 폴더에 넣어야 자동으로 목록에 추가됩니다. 레포 최상단에 바로 올리면 목록에 나오지 않습니다.
+    </details>
+
+    <div class="callout callout-yellow" style="margin-top:var(--space-6);">
+      <div class="callout-title">⚠️ 가장 중요한 규칙</div>
+      <p>index.html은 절대 직접 수정하지 마세요. Actions가 자동으로 덮어씁니다. 아티클 파일만 articles 폴더에 올리면 나머지는 자동으로 처리됩니다.</p>
+    </div>
+
+    <!-- 5. 주소 모음 -->
+    <h2 id="links">핵심 주소 모음</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>용도</th><th>주소</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>내 GitHub 레포</td><td><code>github.com/yyj6791-cmyk/class-questions</code></td></tr>
+          <tr><td>웹사이트 메인</td><td><code>yyj6791-cmyk.github.io/class-questions/</code></td></tr>
+          <tr><td>블록체인 아티클</td><td><code>.../articles/2026-05-20-blockchain-intro.html</code></td></tr>
+          <tr><td>Claude 채팅</td><td><code>claude.ai</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-green" style="margin-top:var(--space-8);">
+      <div class="callout-title">🚀 다음 단계</div>
+      <p>이제 Claude에게 원하는 주제로 HTML을 만들어달라고 요청해보세요. articles 폴더에 올리면 자동으로 웹에 공개됩니다. 수업 자료, 포트폴리오, 학생 안내 자료 등 무엇이든 만들 수 있습니다!</p>
+    </div>
+
+  </article>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-title">목차</div>
+      <ul class="toc-list">
+        <li><a href="#what" class="toc-link">GitHub이란?</a></li>
+        <li><a href="#today" class="toc-link">오늘 한 작업</a></li>
+        <li><a href="#howto" class="toc-link">활용법</a></li>
+        <li><a href="#mistakes" class="toc-link">자주 실수하는 것들</a></li>
+        <li><a href="#links" class="toc-link">핵심 주소 모음</a></li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <p>이 문서는 Claude(claude.ai)와 함께 작성되었습니다 · 2026년 5월</p>
+</footer>
+
+<script>
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrolled = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+  document.getElementById('readingBar').style.width = (scrolled * 100) + '%';
+});
+const sections = document.querySelectorAll('h2[id]');
+const tocLinks = document.querySelectorAll('.toc-link');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
